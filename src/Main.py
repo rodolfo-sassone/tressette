@@ -160,12 +160,15 @@ def mano(p, o, i, m, list_sn):
         for a in p.query("prop("+carta+",punti,P)"):
             if o[i] == 'me' or o[i] == 'compagno':
                 punti = punti + a['P']
-                if m == 9:  #chiusura
-                    punti = punti + 1
             else:
                 punti_avv = punti_avv + a['P']
-                if m == 9:  #chiusura
-                    punti_avv = punti_avv + 1  
+
+    #chiusura
+    if m == 9:
+        if o[i] == 'me' or o[i] == 'compagno':
+            punti = punti + 1
+        else:
+            punti_avv = punti_avv + 1
                       
     for j in range(4):
         p.assertz("prop("+c[j]+",uscita,si)")
@@ -237,8 +240,8 @@ def round_game(p, o, i):
     punti_round_avv = 0
     
     inserisci_mazzo(p)
-    a_monte, punti_busso = check_mazzo(p)
-    punti_round = punti_round + punti_busso
+    a_monte, punti_busso_me = check_mazzo(p)
+    punti_round = punti_round + punti_busso_me
     if a_monte:  #true se l'agente butta a monte
         return punti_round, punti_round_avv
     
@@ -256,7 +259,7 @@ def round_game(p, o, i):
         punti_round = punti_round + punti_mano
         punti_round_avv = punti_round_avv + punti_mano_avv
     
-    print("*****************************FINE ROUND*************************************")   
+    print("*****************************FINE ROUND*************************************") 
     print("PUNTI ROUND: " + str(int(punti_round)))
     print("PUNTI ROUND AVVERSARI: " + str(int(punti_round_avv)))
     
@@ -301,6 +304,6 @@ def gioco(p):
     
     
 p = Prolog()
-p.consult("tressette.pl")
+p.consult("Tressette/src/tressette.pl")
 
 gioco(p)

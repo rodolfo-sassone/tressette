@@ -550,6 +550,7 @@ accAG(_,_,[],A,A).
 accAG(C,P,[H|T],A,L) :- prop(H,potere,PH), prop(C,potere,PC), prop(C,palo,P), prop(H,palo,P), PH>PC, accAG(C,T,[H|A],L).
 accAG(C,P,[_|T],A,L) :- accAG(C,P,T,A,L).
 
+seleziona(9,C) :- disponibili(M,_), member(C,M), !.
 seleziona(T,C) :- disponibili(M,_), accSeleziona(T,-100,M,_,C).
 
 accSeleziona(_,_,[],A,A).
