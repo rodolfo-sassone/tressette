@@ -1,0 +1,60 @@
+
+M1
+Spade 5		/
+Spade 4		/
+
+Bastoni 2	/
+Bastoni 5	/
+
+Denari 6	/
+Denari 1	/
+Denari 10	/
+
+Coppe 4		/
+Coppe 10	/
+Coppe 2		/
+
+M2
+Coppe 8		/
+Coppe 6		/
+Coppe 5		/
+
+Denari 7	/
+Denari 4	/
+
+Spade 8		/
+Spade 9		/
+Spade 6		/
+
+Bastoni 9	/
+Bastoni 10	/
+
+M4
+Spade 1		/
+Spade 2		/
+Spade 10	/
+
+Coppe 1		/
+Coppe 3		/
+
+Bastoni 1	/
+Bastoni 6	/
+
+Denari 2	/
+Denari 8	/
+Denari 5	/
+
+M3
+Coppe 9		/
+Coppe 7		/
+
+Denari 3	/
+Denari 9	/
+
+Bastoni 3	/
+Bastoni 8	/
+Bastoni 4	/
+Bastoni 7	/
+
+Spade 7		/
+Spade 3		/
