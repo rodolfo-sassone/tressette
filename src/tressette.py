@@ -1,8 +1,9 @@
 from pyswip import Prolog
 from search import search_napoli
+from myBN import TressetteVE
 
 class Gioco(object):
-    def __init__(self, ordine):
+    def __init__(self, ordine, bn = False):
         self.ordine = ordine
         self.p = Prolog()
         self.p.consult('Tressette/src/tressette.pl')
@@ -10,6 +11,10 @@ class Gioco(object):
         self.punti_avv = 0
         self.non_finita = True
         self.carte = ["asso_denari", "due_denari", "tre_denari", "dieci_denari", "nove_denari", "otto_denari", "sette_denari", "sei_denari", "cinque_denari", "quattro_denari", "asso_coppe", "due_coppe", "tre_coppe", "dieci_coppe", "nove_coppe", "otto_coppe", "sette_coppe", "sei_coppe", "cinque_coppe", "quattro_coppe", "asso_spade", "due_spade", "tre_spade", "dieci_spade", "nove_spade", "otto_spade", "sette_spade", "sei_spade", "cinque_spade", "quattro_spade", "asso_bastoni", "due_bastoni", "tre_bastoni", "dieci_bastoni", "nove_bastoni", "otto_bastoni", "sette_bastoni", "sei_bastoni", "cinque_bastoni", "quattro_bastoni"]
+        if bn:
+            self.bn = TressetteVE()
+        else:
+            self.bn = None
 
     def play(self):
         i_ordine = 0
@@ -68,19 +73,24 @@ class Gioco(object):
     
 
     def inserisci_mazzo(self):
+        mazzo = []
         print("**********************INSERISCI MAZZO********************************")
         for _ in range(10):
             
             c = input("inserisci carta:")
             if c.lower() in self.carte:
                 self.p.assertz("prop("+ c.lower() +",possessore,giocatore(me))")
-
+                mazzo.append(c.lower())
             else:
                 print("-stringa errata, riprova")
                 while c.lower() not in self.carte:
                     c = input("inserisci carta:")
                     if c.lower() in self.carte:
                         self.p.assertz("prop("+ c.lower() +",possessore,giocatore(me))")
+                        mazzo.append(c.lower())
+
+        if self.bn != None:
+            self.bn.set_mazzo(mazzo)
 
     def check_mazzo(self):
         punti = 0
@@ -165,7 +175,7 @@ class Gioco(object):
                     punti_avv = punti_avv+3
                     
             elif what.lower() == "corona":
-                lp = ["denari","spade","coppe","bastoni"]
+                lp = ["bastoni","spade","coppe","bastoni"]
                 t = input("Di?(asso/due/tre)")
                 
                 for palo in lp:
@@ -182,25 +192,38 @@ class Gioco(object):
     
 
     def mano(self, i, m, list_sn):
+        palo = None
+        terra = []
+        bn_flag = (self.bn != None)
         c = []
         print("----------------------------------------------------------------------------------------")
         for j in range(4):
             if self.ordine[i] == "me":
-                for a in self.p.query("seleziona("+str(m)+",C)"):
-                    c.append(a["C"])
-                    print("Butta: " + a["C"])
+                if bn_flag: #BN
+                    carta = self.bn.query(j, terra, palo)
+                    c.append(carta)
+                    print("Butta: " + carta)
+                else:   #DN
+                    for a in self.p.query("seleziona("+str(m)+",C)"):
+                        c.append(a["C"])
+                        print("Butta: " + a["C"])
             else:
                 carta = input("Turno di " + self.ordine[i] + " che butta: ")
                 if carta.lower() in self.carte:
                     c.append(carta.lower())
                     self.p.assertz("prop("+c[j]+",possessore,giocatore("+self.ordine[i]+"))")
+                    if bn_flag: 
+                        self.bn.append_uscita(carta.lower())
+                        terra.append(carta.lower())
                 else:
                     while carta not in self.carte:
                         carta = input("Turno di " + self.ordine[i] + " che butta: ")
                         if carta.lower() in self.carte:
                             c.append(carta.lower())
                             self.p.assertz("prop("+c[j]+",possessore,giocatore("+self.ordine[i]+"))")
-                
+                            if bn_flag: 
+                                self.bn.append_uscita(carta.lower())
+                                terra.append(carta.lower())
             self.p.assertz("prop("+c[j]+",terra,"+str(m)+")")
             if j == 0:
                 for a in self.p.query("prop("+c[j]+",palo,P)"):
@@ -238,7 +261,7 @@ class Gioco(object):
         return punti, punti_avv, i
 
     def clearKB(self):
-        self.p.query("retractall(prop(X,terra,N))")
-        self.p.query("retractall(prop(X,possessore,giocatore(G)))")
-        self.p.query("retractall(prop(X,uscita,si))")
-        self.p.query("retractall(palo(T,P))")
+        self.p.retractall("(prop(X,terra,N))")
+        self.p.retractall("(prop(X,possessore,giocatore(G)))")
+        self.p.retractall("(prop(X,uscita,si))")
+        self.p.retractall("(palo(T,P))")

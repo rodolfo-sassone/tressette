@@ -33,5 +33,14 @@ def ordine_turni():     #ATTENZIONE!!! NESSUN CONTROLLO SULL'INPUT!
         
     return l   
 
-gioco = Gioco(ordine_turni())
+
+r = '0'
+while r != '1' and r != '2':
+    r = input('Seleziona ragionamento:\n1.Decision Network\n2.Belief Network\nSeleziona(1/2):\n')
+
+bn = False
+if r == 2:
+    bn = True
+
+gioco = Gioco(ordine_turni(), bn = bn)
 gioco.play()

@@ -1,9 +1,11 @@
+import random
 from aipython.probVariables import Variable
 from aipython.probFactors import Prob
 from aipython.probGraphicalModels import BeliefNetwork
 from aipython.probVE import VE 
 from enum import Enum
 import numpy as np
+from carte import CartaNapoletana
 
 boolean = [True, False]
 
@@ -205,15 +207,232 @@ tressette = BeliefNetwork("Probabilita' prossima carta", {palo,
                                                            f_4b,f_5b,f_6b,f_7b,f_8b,f_9b,f_10b,f_1b,f_2b,f_3b,
                                                            f_cd, f_cc, f_cs, f_cb})
 
+
 class TressetteVE(VE):
     def __init__(self, gm=tressette):
         super().__init__(gm)
+        self.mazzo = []
+        self.uscite = []
+        self.dict = {'quattro_denari':quattro_denari, 'cinque_denari': cinque_denari, 'sei_denari': sei_denari, 'sette_denari': sette_denari, 'otto_denari': otto_denari, 'nove_denari':nove_denari, 'dieci_denari':dieci_denari, 'asso_denari':asso_denari, 'due_denari':due_denari, 'tre_denari':tre_denari,
+                     'quattro_coppe':quattro_coppe, 'cinque_coppe': cinque_coppe, 'sei_coppe': sei_coppe, 'sette_coppe': sette_coppe, 'otto_coppe': otto_coppe, 'nove_coppe':nove_coppe, 'dieci_coppe':dieci_coppe, 'asso_coppe':asso_coppe, 'due_coppe':due_coppe, 'tre_coppe':tre_coppe,
+                     'quattro_spade':quattro_spade, 'cinque_spade': cinque_spade, 'sei_spade': sei_spade, 'sette_spade': sette_spade, 'otto_spade': otto_spade, 'nove_spade':nove_spade, 'dieci_spade':dieci_spade, 'asso_spade':asso_spade, 'due_spade':due_spade, 'tre_spade':tre_spade,
+                     'quattro_bastoni':quattro_bastoni, 'cinque_bastoni': cinque_bastoni, 'sei_bastoni': sei_bastoni, 'sette_bastoni': sette_bastoni, 'otto_bastoni': otto_bastoni, 'nove_bastoni':nove_bastoni, 'dieci_bastoni':dieci_bastoni, 'asso_bastoni':asso_bastoni, 'due_bastoni':due_bastoni, 'tre_bastoni':tre_bastoni}
 
-    def query(self,var,obs={},elim_order=None):
-        super().query(self,var,obs,elim_order)
 
-    def project_observations(self,factor,obs):
-        super().project_observations(self,factor,obs)
+    def append_uscita(self, name):
+        carta = CartaNapoletana(name, var = self.dict[name])
+        self.uscite.append(carta)
 
-    def eliminate_var(self,factors,var):
-        super().eliminate_var(self,factors,var)
+    def set_mazzo(self, lista_nomi):
+        self.mazzo = self.StringtoCartaNapoletana(lista_nomi)
+
+    #RESTITUISCE LA CARTA DA TIRARE: POLICY GREEDY, SE POSSIAMO PRENDERE PRENDIAMO, SCARTIAMO ALTRIMENTI
+    def query(self, j, nomi_terra, palo):
+        if palo == None:    #SIAMO PRIMI
+            dp = {'denari': self.query_denari, 'coppe':self.query_coppe, 'spade':self.query_spade, 'bastoni':self.query_bastoni}
+            ld = []
+            for p, f in dp.items():
+                dict = {}
+                carte_palo = self.carte_palo(p)
+
+                t, p = self.expected_tira(j, carte_palo, 0, f)
+                dict['carta'] = t
+                dict['presa'] = p
+                ld.append(dict)
+
+            ld_true = []
+            for d in ld:
+                if d['presa']:
+                    ld_true.append(d)
+            
+            if len(ld_true) == 0:
+                d = random.choice(ld)
+            else:
+                d = random.choice(ld_true)
+            
+            t = d['carta']            
+        else:
+            terra = self.StringtoCartaNapoletana(nomi_terra)
+            max_pw_terra = self.max_pw_terra(terra, palo)
+            carte_palo = self.carte_palo(palo)
+
+            if j < 3:   #NON SIAMO ULTIMI A TIRARE
+                if palo == 'denari':
+                    t, _ = self.expected_tira(j, carte_palo, max_pw_terra, self.query_denari)
+                elif palo == 'coppe':
+                    t, _ = self.expected_tira(j, carte_palo, max_pw_terra, self.query_coppe)
+                elif palo == 'spade':
+                    t, _ = self.expected_tira(j, carte_palo, max_pw_terra, self.query_spade)
+                elif palo == 'bastoni':
+                    t, _ = self.expected_tira(j, carte_palo, max_pw_terra, self.query_bastoni)
+            else:   #SIAMO ULTIMI A TIRARE
+                t, _ = self.tira(carte_palo, max_pw_terra)
+
+        self.mazzo.remove(t)
+        return t.get_name()
+
+    def max_pw_terra(self, terra, palo):
+        max_pw_terra = 0
+        for carta in terra:
+            if carta.get_palo() == palo:
+                if carta.get_potere() > max_pw_terra:
+                    max_pw_terra = carta.get_potere()
+        return max_pw_terra
+    
+    #CALCOLA LE PROSSIME CARTE ATTESE E RITORNA LA CARTA DA TIRARE
+    def expected_tira(self, j, carte_palo, max_pw_terra, query_palo):
+        hyp = []
+        expected_power = max_pw_terra
+
+        while j < 3: 
+            nome_carta, epw, _ = query_palo(hyp)
+            hyp.append(nome_carta)
+            if epw > expected_power:
+                expected_power = epw
+            j = j + 1
+
+        return self.tira(carte_palo, expected_power)
+
+    #CALCOLA LA CARTA DA TIRARE
+    def tira(self, carte_palo, expected_power):
+        tira = None
+        presa = False
+        if len(carte_palo) == 0:
+            min_punti = 2
+            c_mp = None
+            for carta in self.mazzo:
+                if carta.get_punti() < min_punti:
+                    min_punti = carta.get_punti()
+                    c_mp = carta
+                    
+            tira = c_mp
+
+        elif len(carte_palo) == 1:
+            carta = carte_palo[0]
+            tira = carta
+                
+        else:   #abbiamo più di una carta
+            max_pw = 0
+            c_max = None
+            for carta in carte_palo:
+                if carta.get_potere() > max_pw:
+                    max_pw = carta.get_potere()
+                    c_max = carta
+                   
+            if max_pw > expected_power:     #possiamo prendere
+                presa = True
+                suff_pw = 0
+                c_suff = None
+                for carta in carte_palo:
+                    if carta.get_potere() < max_pw and carta.get_potere() > expected_power:
+                        suff_pw = carta.get_potere()
+                        c_suff = carta
+                if c_suff != None:
+                    tira = c_suff
+                else:
+                    tira = c_max
+            else:                       #non possiamo prendere
+                min_punti = 2
+                c_mp = None
+                for carta in carte_palo:
+                    if carta.get_punti() < min_punti:
+                        min_punti = carta.get_punti()
+                        c_mp = carta    
+                tira = c_mp
+        return tira, presa
+
+    def carte_palo(self, palo):
+        carte_palo = []
+        for carta in self.mazzo:
+            if carta.get_palo() == palo:
+                carte_palo.append(carta)
+        return carte_palo
+                
+
+    def expected_values(self, q, palo):
+        k_max = 0
+        max = 0
+        for k, v in q.items():
+            if v>max:
+                max = v
+                k_max = k
+
+        carta = None
+        expected_power = 0
+        expected_point = 0.27
+        if max != 0:
+            carta = CartaNapoletana(k_max+1, palo = palo)
+            expected_power = carta.get_potere()
+            expected_point = carta.get_punti()
+
+        return carta, expected_power, expected_point
+
+
+    def query_denari(self, hyp = [], elim_order = None):
+        l = self.uscite + self.mazzo
+        for h in hyp:
+            if h != None:
+                l.append(h)    
+        var = carta_denari
+        obs = {palo:0}
+
+        for carta in l:
+            obs[carta.get_var()] = False
+
+        q = super().query(var,obs,elim_order)
+
+        return self.expected_values(q, 'denari') 
+    
+
+    def query_coppe(self, hyp = [], elim_order = None):
+        l = self.uscite + self.mazzo
+        for h in hyp:
+            if h != None:
+                l.append(h)    
+        var = carta_coppe
+        obs = {palo:1}
+
+        for carta in l:
+            obs[carta.get_var()] = False
+
+        q = super().query(var,obs,elim_order)
+
+        return self.expected_values(q, 'coppe') 
+
+    def query_spade(self, hyp = [], elim_order = None):
+        l = self.uscite + self.mazzo
+        for h in hyp:
+            if h != None:
+                l.append(h)    
+        var = carta_spade
+        obs = {palo:2}
+
+        for carta in l:
+            obs[carta.get_var()] = False
+
+        q = super().query(var,obs,elim_order)
+
+        return self.expected_values(q, 'spade')  
+
+    def query_bastoni(self, hyp = [], elim_order = None):
+        l = self.uscite + self.mazzo
+        for h in hyp:
+            if h != None:
+                l.append(h)    
+        var = carta_bastoni
+        obs = {palo:3}
+
+        for carta in l:
+            obs[carta.get_var()] = False
+
+        q = super().query(var,obs,elim_order)
+
+        return self.expected_values(q, 'bastoni') 
+
+    def StringtoCartaNapoletana(self, lista_nomi):
+        mazzo = []
+        for name in lista_nomi:
+            carta = CartaNapoletana(name, var = self.dict[name])
+            mazzo.append(carta)
+
+        return mazzo

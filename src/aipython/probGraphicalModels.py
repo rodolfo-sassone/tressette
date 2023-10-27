@@ -8,8 +8,8 @@
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
 # See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-from display import Displayable
-from probFactors import CPD
+from .display import Displayable
+from .probFactors import CPD
 import matplotlib.pyplot as plt
 
 class GraphicalModel(Displayable):
@@ -78,8 +78,8 @@ class BeliefNetwork(GraphicalModel):
                 x,y = var.position
                 plt.text(x,y,var.name,bbox=bbox,ha='center')
 
-from probVariables import Variable
-from probFactors import Prob, LogisticRegression, NoisyOR
+from .probVariables import Variable
+from .probFactors import Prob, NoisyOR
 
 boolean = [False, True]
 A = Variable("A", boolean, position=(0,0.8))
@@ -171,13 +171,13 @@ p_cold_lr = Prob(Cold,[],[0.9,0.1])
 p_flu_lr = Prob(Flu,[],[0.95,0.05])
 p_covid_lr = Prob(Covid,[],[0.99,0.01])
 
-p_cough_lr =  LogisticRegression(Cough,  [Cold,Flu,Covid], [-2.2,  1.67,  1.26,  3.19])
+'''p_cough_lr =  LogisticRegression(Cough,  [Cold,Flu,Covid], [-2.2,  1.67,  1.26,  3.19])
 p_fever_lr =  LogisticRegression(Fever,  [     Flu,Covid], [-4.6,         5.02,  5.46])
 p_sneeze_lr = LogisticRegression(Sneeze, [Cold,Flu      ], [-2.94, 3.04,  1.79    ])
 
 bn_lr1 = BeliefNetwork("Bipartite Diagnostic Network -  logistic regression",
                          {Cough, Fever, Sneeze, Cold, Flu, Covid},
-                          {p_cold_lr, p_flu_lr, p_covid_lr, p_cough_lr, p_fever_lr, p_sneeze_lr})  
+                          {p_cold_lr, p_flu_lr, p_covid_lr, p_cough_lr, p_fever_lr, p_sneeze_lr})'''  
 
 # to see the conditional probability of Noisy-or do:
 #print(p_cough_lr.to_table())
@@ -189,8 +189,6 @@ bn_lr1 = BeliefNetwork("Bipartite Diagnostic Network -  logistic regression",
 # print(LogisticRegression(X,[A,B,C,D],[w0, logit(0.05)-w0, logit(0.1)-w0, logit(0.2)-w0, logit(0.2)-w0]).to_table(given={X:True}))
 # try to predict what would happen (and then test) if we had
 # w0=logit(0.01)
-
-from display import Displayable
 
 class InferenceMethod(Displayable):
     """The abstract class of graphical model inference methods"""
