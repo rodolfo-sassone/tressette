@@ -61,69 +61,65 @@ Spade 3		/
 
 -----------------------------------------------------------
 
-COMPAGNO
 M6
-1 di Denari	/
-5 di Denari	/
-7 di Denari	/
+1 di Denari	
+5 di Denari	
+7 di Denari	
 
-2 di Bastoni	/
-9 di Bastoni	/
+2 di Bastoni	
+9 di Bastoni	
 
-4 di Spade	/
-6 di Spade	/
+4 di Spade	
+6 di Spade	
 
-3 di Coppe	/
-8 di Coppe	/
-10 di Coppe	/
-
-
-AVV2
-M5
-1 di Coppe	/
-7 di Coppe	/
-5 di Coppe	/
-
-2 di Denari	/
-8 di Denari	/
-6 di Denari	/
-
-3 di Spade	/
-9 di Spade	/
-
-4 di Bastoni	/
-10 di Bastoni	/
+3 di Coppe	
+8 di Coppe	
+10 di Coppe	
 
 
-ME
 M7
-1 di Spade	/
-5 di Spade	/
+1 di Spade	
+5 di Spade	
 
-2 di Coppe	/
-9 di Coppe	/
-6 di Coppe	/
+2 di Coppe	
+9 di Coppe	
+6 di Coppe	
 
-4 di Denari	/
-10 di Denari	/
+4 di Denari	
+10 di Denari	
 
-8 di Bastoni	/
-3 di Bastoni	/
-7 di Bastoni	/
+8 di Bastoni	
+3 di Bastoni	
+7 di Bastoni	
 
 
-AVV1
 M8
-1 di Bastoni	/
-5 di Bastoni	/
-6 di Bastoni	/
+1 di Bastoni	
+5 di Bastoni	
+6 di Bastoni	
 
-3 di Denari	/
-9 di Denari	/
+3 di Denari	
+9 di Denari	
 
-4 di Coppe	/
+4 di Coppe	
 
-2 di Spade	/
-8 di Spade	/
-10 di Spade	/
-7 di Spade	/
+2 di Spade	
+8 di Spade	
+10 di Spade	
+7 di Spade	
+
+
+M5
+1 di Coppe	
+7 di Coppe	
+5 di Coppe	
+
+2 di Denari	
+8 di Denari	
+6 di Denari	
+
+3 di Spade	
+9 di Spade	
+
+4 di Bastoni	
+10 di Bastoni	
